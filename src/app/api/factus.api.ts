@@ -22,30 +22,26 @@ export class FactusAPI {
     expires_in: number;
     refresh_token: string;
   }> {
-    const bodyData = {
-      grant_type: "password",
-      client_id: this.config.client_id,
-      client_secret: this.config.client_id,
-      username,
-      password,
-    };
+    const formData = new FormData(); // format form-data
+    formData.append("grant_type", "password");
+    formData.append("client_id", this.config.client_id);
+    formData.append("client_secret", this.config.client_secret);
+    formData.append("username", username);
+    formData.append("password", password);
 
     try {
       const { data, statusText } = await axios.post(
-        ENV.ENDPOINTS.AUTH.AUTH,
-        bodyData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        `${ENV.URL_API}${ENV.ENDPOINTS.AUTH.AUTH}`,
+        formData
       );
 
+      console.log(" response data ", data);
       if (!data) {
         throw new Error(`Authentication failed: ${statusText}`);
       }
       this.access_token_ = data.access_token;
       this.refresh_token_ = data.refresh_token;
+      this.setSesion(data.access_token, data.refresh_token);
       this.scheduleTokenRefresh(data.expires_in);
       return data;
     } catch (error) {
@@ -82,11 +78,15 @@ export class FactusAPI {
     try {
       const {
         data: { access_token, refresh_token, expires_in },
-      } = await axios.post(ENV.ENDPOINTS.AUTH.AUTH, bodyRefresh, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      } = await axios.post(
+        `${ENV.URL_API}${ENV.ENDPOINTS.AUTH.AUTH}`,
+        bodyRefresh,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       this.setSesion(access_token, refresh_token);
       this.scheduleTokenRefresh(expires_in);
       return { access_token, refresh_token, expires_in };

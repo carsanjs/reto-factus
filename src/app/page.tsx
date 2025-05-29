@@ -20,6 +20,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { login } from "../../utils/schemas";
 import { formData } from "../../utils/type";
+import { AuthController } from "@/lib/controller/auth.controller";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,12 +38,11 @@ export default function Home() {
     resolver: yupResolver(login),
   });
 
-  const handleSign = (data: formData) => {
+  const handleSign = async (data: formData) => {
     const { username, password } = data;
     try {
       setIsLoading(true);
-      // peticion auth controller
-
+      await AuthController.authenticateWithPassword(username, password);
       reset();
       router.replace("/dashboard");
     } catch (error) {
@@ -55,7 +55,7 @@ export default function Home() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
+            <div className="bg-red-600 p-3 rounded-full">
               <FiFileText className="h-8 w-8 text-white" />
             </div>
           </div>
@@ -113,10 +113,10 @@ export default function Home() {
                   </Label>
                 </div>
               </div>
-
+              {/* [#f63355] */}
               <Button
                 type="submit"
-                className="w-full bg-[#f63355] font-bold"
+                className="w-full bg-gray-900 font-bold"
                 disabled={isLoading}
               >
                 {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}

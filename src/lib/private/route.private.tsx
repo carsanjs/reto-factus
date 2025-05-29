@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
 
-export const PublicRoute = ({
+export const PrivatedRoute = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -11,12 +11,11 @@ export const PublicRoute = ({
   const { isAuthenticated, isInitialized } = useAuth();
   const router = useRouter();
   const [isVerified, setIsVerified] = useState(false);
-
   useEffect(() => {
     if (!isInitialized) return;
 
-    if (isAuthenticated) {
-      router.replace("/dashboard");
+    if (!isAuthenticated) {
+      router.replace("/");
     } else {
       setIsVerified(true);
     }
@@ -26,5 +25,5 @@ export const PublicRoute = ({
     return null;
   }
 
-  return { children };
+  return <>{children}</>;
 };
