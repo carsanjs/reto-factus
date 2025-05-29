@@ -80,6 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Función de re-login con refresh token
   const relogin = useCallback(async () => {
+    console.log("entro a la funcion de refreshtoken -> ");
+
     try {
       await AuthController.refreshAccessToken();
       await login();

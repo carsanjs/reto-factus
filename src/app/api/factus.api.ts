@@ -1,8 +1,6 @@
 import AxiosInstance from "@/lib/service/axios";
 import { ENV } from "../../../utils/constants";
 import { FactusConfig } from "../../../utils/type";
-import axios from "axios";
-
 export class FactusAPI {
   private config: FactusConfig;
   private refresh_token_: string | null = null;
@@ -30,8 +28,8 @@ export class FactusAPI {
     formData.append("password", password);
 
     try {
-      const { data, statusText } = await axios.post(
-        `${ENV.URL_API}${ENV.ENDPOINTS.AUTH.AUTH}`,
+      const { data, statusText } = await AxiosInstance.post(
+        ENV.ENDPOINTS.AUTH.AUTH,
         formData
       );
 
@@ -68,28 +66,23 @@ export class FactusAPI {
     refresh_token: string;
   }> {
     const refreshToken = this.getRefreshToken();
+    console.log(" existing refreshtoken ?? _>");
     if (!refreshToken) throw new Error("No existe refresh_token");
-    const bodyRefresh = {
-      client_id: this.config.client_id,
-      client_secret: this.config.client_secret,
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-    };
+    const formDataRefresh = new FormData(); // format form-data
+    formDataRefresh.append("grant_type", "refresh_token");
+    formDataRefresh.append("client_id", this.config.client_id);
+    formDataRefresh.append("client_secret", this.config.client_secret);
+    formDataRefresh.append("refresh_token", refreshToken);
     try {
-      const {
-        data: { access_token, refresh_token, expires_in },
-      } = await axios.post(
-        `${ENV.URL_API}${ENV.ENDPOINTS.AUTH.AUTH}`,
-        bodyRefresh,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const { data } = await AxiosInstance.post(
+        ENV.ENDPOINTS.AUTH.AUTH,
+        formDataRefresh
       );
+
+      const { access_token, refresh_token, expires_in } = data;
       this.setSesion(access_token, refresh_token);
       this.scheduleTokenRefresh(expires_in);
-      return { access_token, refresh_token, expires_in };
+      return data;
     } catch (error) {
       throw error;
     }
