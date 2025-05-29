@@ -20,8 +20,9 @@ export interface formData {
 }
 export type UserType = {
   nombre: string;
-  apellido: string;
-  rol: string;
+  role: string;
+  id: string;
+  email: string;
 };
 
 // Estado global de autenticación
@@ -49,9 +50,8 @@ export type AuthAction = {
 
 ///////// type de datos para api de factus //////////////////////////
 export interface FactusConfig {
-  apiKey: string;
-  baseUrl: string;
-  // testMode: boolean;
+  client_id: string;
+  client_secret: string;
 }
 
 interface InvoiceData {

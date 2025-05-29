@@ -4,11 +4,15 @@ const CE = process.env.NEXT_PUBLIC_CLIENTE_SECRET;
 
 export const ENV = {
   URL_API: `https://${URL_API}`,
-  CI: CI,
-  CE: CE,
+  CI: CI as string,
+  CE: CE as string,
   ENDPOINTS: {
     AUTH: {
       AUTH: "/oauth/token",
     },
+  },
+  JWT: {
+    ACCESSTOKEN: "access_token",
+    REFRESHTOKEN: "refresh_token",
   },
 };

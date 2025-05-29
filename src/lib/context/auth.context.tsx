@@ -6,8 +6,8 @@ import {
   useRef,
   useCallback,
 } from "react";
-
 import { AuthState, initialState, AuthAction } from "../../../utils/type";
+import { AuthController } from "../controller/auth.controller";
 
 interface AuthContextType extends AuthState {
   login: () => Promise<void>;
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   //  Función de inicio de sesión
   const login = useCallback(async () => {
-    const { user } = await usercontroller.getMe();
+    const { user } = await AuthController.getMe();
 
     dispatch({
       type: "LOGIN",
@@ -72,31 +72,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = () => {
-    authcontroller.removeSesion();
+    AuthController.removeSesion();
     dispatch({
       type: "LOGOUT",
     });
   };
 
   // Función de re-login con refresh token
-  const relogin = useCallback(
-    async (refreshToken: string) => {
-      try {
-        await authcontroller.refreshAccessToken(refreshToken);
-        await login();
-      } catch (error) {
-        console.error("Error en relogin:", error);
-        logout();
-      }
-    },
-    [login]
-  );
+  const relogin = useCallback(async () => {
+    try {
+      await AuthController.refreshAccessToken();
+      await login();
+    } catch (error) {
+      console.error("Error en relogin:", error);
+      logout();
+    }
+  }, [login]);
 
   useEffect(() => {
     if (isMounted.current) return;
     const init = async () => {
-      const accesstoken = authcontroller.getAccessToken();
-      const refreshtoken = authcontroller.getRefreshToken();
+      const accesstoken = AuthController.getAccessToken();
+      const refreshtoken = AuthController.getRefreshToken();
 
       if (!accesstoken || !refreshtoken) {
         dispatch({
@@ -108,24 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         return;
       }
-
-      if (hasExpiredToken(accesstoken)) {
-        if (hasExpiredToken(refreshtoken)) {
-          dispatch({
-            type: "INITIALIZED",
-            payload: {
-              isAuthenticated: false,
-              user: null,
-            },
-          });
-          return;
-        } else {
-          console.log(
-            "😅😅😅 por suerte podemos renovando el refreshtoken... 😁"
-          );
-          await relogin(refreshtoken);
-        }
-      } else {
+      try {
         const user = await login();
         dispatch({
           type: "INITIALIZED",
@@ -134,6 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             user,
           },
         });
+      } catch (error) {
+        throw new Error(" error al intentar autenticarse", error);
       }
     };
     init();

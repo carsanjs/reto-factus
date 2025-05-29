@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/hooks/useAuth";
+import { useAuth } from "../hooks/useAuth";
 
 export const PublicRoute = ({
   children,
@@ -11,7 +11,6 @@ export const PublicRoute = ({
   const { isAuthenticated, isInitialized } = useAuth();
   const router = useRouter();
   const [isVerified, setIsVerified] = useState(false);
-  console.log(" is authenticated public , ", isAuthenticated);
 
   useEffect(() => {
     if (!isInitialized) return;

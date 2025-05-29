@@ -1,28 +1,37 @@
 import AxiosInstance from "@/lib/service/axios";
 import { ENV } from "../../../utils/constants";
+import { FactusConfig } from "../../../utils/type";
+import axios from "axios";
 
-class FactusAPI {
-  // private config: FactusConfig;
+export class FactusAPI {
+  private config: FactusConfig;
+  private refresh_token_: string | null = null;
+  private access_token_: string | null = null;
+  private expires_in_: ReturnType<typeof setTimeout> | null = null;
 
-  // constructor(config: FactusConfig) {
-  //   this.config = config;
-  // }
+  constructor(config: FactusConfig) {
+    this.config = config;
+  }
 
   // Autenticación con Factus
-  async authenticate(
+  async authenticateWithPassword(
     username: string,
     password: string
-  ): Promise<{ token: string; expiresIn: number }> {
+  ): Promise<{
+    access_token: string;
+    expires_in: number;
+    refresh_token: string;
+  }> {
     const bodyData = {
       grant_type: "password",
-      client_id: ENV.CI,
-      client_secret: ENV.CE,
+      client_id: this.config.client_id,
+      client_secret: this.config.client_id,
       username,
       password,
     };
 
     try {
-      const { data, statusText } = await AxiosInstance.post(
+      const { data, statusText } = await axios.post(
         ENV.ENDPOINTS.AUTH.AUTH,
         bodyData,
         {
@@ -35,7 +44,9 @@ class FactusAPI {
       if (!data) {
         throw new Error(`Authentication failed: ${statusText}`);
       }
-
+      this.access_token_ = data.access_token;
+      this.refresh_token_ = data.refresh_token;
+      this.scheduleTokenRefresh(data.expires_in);
       return data;
     } catch (error) {
       console.error("Factus authentication error:", error);
@@ -43,6 +54,93 @@ class FactusAPI {
     }
   }
 
+  async getMe() {
+    const access_token = this.getAccessToken();
+    if (!access_token) throw new Error("No access token");
+    return {
+      user: {
+        nombre: "Sand Box",
+        email: "sandbox@factus.com.co",
+        role: "Administrado",
+        id: "3",
+      },
+    };
+  }
+  async refreshAccessToken(): Promise<{
+    access_token: string;
+    expires_in: number;
+    refresh_token: string;
+  }> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) throw new Error("No existe refresh_token");
+    const bodyRefresh = {
+      client_id: this.config.client_id,
+      client_secret: this.config.client_secret,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    };
+    try {
+      const {
+        data: { access_token, refresh_token, expires_in },
+      } = await axios.post(ENV.ENDPOINTS.AUTH.AUTH, bodyRefresh, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      this.setSesion(access_token, refresh_token);
+      this.scheduleTokenRefresh(expires_in);
+      return { access_token, refresh_token, expires_in };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private scheduleTokenRefresh(expiresInSeconds: number) {
+    if (this.expires_in_) {
+      clearTimeout(this.expires_in_);
+    }
+
+    const refreshTime = (expiresInSeconds - 240) * 1000;
+
+    this.expires_in_ = setTimeout(() => {
+      this.refreshAccessToken().catch((err) => {
+        console.error("Auto refresh failed:", err);
+      });
+    }, refreshTime);
+  }
+
+  private setSesion(accesstoken: string, refreshtoken: string) {
+    if (accesstoken && refreshtoken) {
+      AxiosInstance.defaults.headers.common.Authorization = `Bearer ${accesstoken}`;
+      AxiosInstance.defaults.headers.common.Accept = "application/json";
+      this.setAcessToken(accesstoken);
+      this.setRefreshToken(refreshtoken);
+    }
+  }
+
+  setAcessToken(accesstoken: string) {
+    console.log(" guardamos el accestoken en localstorage ");
+    console.log(" accestoken en localstorage ", accesstoken);
+    localStorage.setItem(ENV.JWT.ACCESSTOKEN, accesstoken);
+    document.cookie = `${ENV.JWT.ACCESSTOKEN}=${accesstoken}; path=/; secure; samesite=strict`;
+  }
+
+  setRefreshToken(refreshtoken: string) {
+    localStorage.setItem(ENV.JWT.REFRESHTOKEN, refreshtoken);
+    document.cookie = `${ENV.JWT.REFRESHTOKEN}=${refreshtoken}; path=/; secure; samesite=strict`;
+  }
+
+  getAccessToken = () => localStorage.getItem(ENV.JWT.ACCESSTOKEN);
+
+  getRefreshToken = () => localStorage.getItem(ENV.JWT.REFRESHTOKEN);
+
+  removeSesion() {
+    localStorage.removeItem(ENV.JWT.ACCESSTOKEN);
+    localStorage.removeItem(ENV.JWT.REFRESHTOKEN);
+    document.cookie = `${ENV.JWT.ACCESSTOKEN}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    document.cookie = `${ENV.JWT.REFRESHTOKEN}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    delete AxiosInstance.defaults.headers.common.Authorization;
+  }
   // Crear y enviar factura a la DIAN
   async createInvoice(invoiceData: InvoiceData): Promise<FactusResponse> {
     try {
@@ -255,11 +353,6 @@ class FactusAPI {
     };
     return methodMap[method] || "10";
   }
-}
-
-// Función para crear instancia de la API
-export function createFactusAPI(config: FactusConfig): FactusAPI {
-  return new FactusAPI(config);
 }
 
 // Tipos exportados
