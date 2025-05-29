@@ -16,3 +16,4 @@ npm i tailwind-merge@latest
 npm install react-hook-form - link:[https://react-hook-form.com/]
 npm i @hookform/resolvers - link:[https://www.npmjs.com/package/@hookform/resolvers]
 npm i yup - link:[https://www.npmjs.com/package/yup]
+npm i axios

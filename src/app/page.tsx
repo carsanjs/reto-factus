@@ -18,8 +18,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { login } from "../../lib/schemas";
-import { formData } from "../../lib/type";
+import { login } from "../../utils/schemas";
+import { formData } from "../../utils/type";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);

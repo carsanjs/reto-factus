@@ -1,73 +1,41 @@
-interface FactusConfig {
-  apiKey: string;
-  baseUrl: string;
-  testMode: boolean;
-}
-
-interface InvoiceData {
-  client: {
-    name: string;
-    nit: string;
-    email: string;
-    address: string;
-    city: string;
-    phone: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    taxRate: number;
-  }>;
-  paymentMethod: string;
-  paymentTerms: string;
-  notes?: string;
-  dueDate: string;
-}
-
-interface FactusResponse {
-  success: boolean;
-  data?: {
-    cufe: string;
-    number: string;
-    status: string;
-    trackingId: string;
-    xmlUrl?: string;
-    pdfUrl?: string;
-  };
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-}
+import AxiosInstance from "@/lib/service/axios";
+import { ENV } from "../../../utils/constants";
 
 class FactusAPI {
-  private config: FactusConfig;
+  // private config: FactusConfig;
 
-  constructor(config: FactusConfig) {
-    this.config = config;
-  }
+  // constructor(config: FactusConfig) {
+  //   this.config = config;
+  // }
 
   // Autenticación con Factus
-  async authenticate(): Promise<{ token: string; expiresIn: number }> {
-    try {
-      const response = await fetch(`${this.config.baseUrl}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          apiKey: this.config.apiKey,
-          testMode: this.config.testMode,
-        }),
-      });
+  async authenticate(
+    username: string,
+    password: string
+  ): Promise<{ token: string; expiresIn: number }> {
+    const bodyData = {
+      grant_type: "password",
+      client_id: ENV.CI,
+      client_secret: ENV.CE,
+      username,
+      password,
+    };
 
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.statusText}`);
+    try {
+      const { data, statusText } = await AxiosInstance.post(
+        ENV.ENDPOINTS.AUTH.AUTH,
+        bodyData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!data) {
+        throw new Error(`Authentication failed: ${statusText}`);
       }
 
-      const data = await response.json();
       return data;
     } catch (error) {
       console.error("Factus authentication error:", error);
