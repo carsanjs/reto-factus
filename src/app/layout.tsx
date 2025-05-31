@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthContext, AuthProvider } from "@/lib/context/auth.context";
 import { Loading } from "../../components/ui/Loading";
+import { Toaster } from "../../components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,16 @@ export default function RootLayout({
       >
         <AuthProvider>
           <AuthContext.Consumer>
-            {(auth) => (!auth.isInitialized ? <Loading /> : children)}
+            {(auth) =>
+              !auth.isInitialized ? (
+                <Loading />
+              ) : (
+                <>
+                  <Toaster />
+                  {children}
+                </>
+              )
+            }
           </AuthContext.Consumer>
         </AuthProvider>
       </body>

@@ -21,6 +21,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { login } from "../../utils/schemas";
 import { formData } from "../../utils/type";
 import { AuthController } from "@/lib/controller/auth.controller";
+import { toast } from "sonner";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,12 +42,17 @@ export default function Home() {
   const handleSign = async (data: formData) => {
     const { username, password } = data;
     try {
+      toast("Cargando...");
       setIsLoading(true);
       await AuthController.authenticateWithPassword(username, password);
-      reset();
+      toast.success("Ingresado exitosamente!");
       router.replace("/dashboard");
+      reset();
     } catch (error) {
-      console.log(" Error a pedir la peticion", error);
+      reset();
+      toast.error(error?.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -115,11 +121,6 @@ export default function Home() {
               </div>
               {/* [#f63355] */}
               <Button
-                // variant={
-                //   errors.password || errors.username
-                //     ? "destructive"
-                //     : "secondary"
-                // }
                 type="submit"
                 className={`w-full font-bold ${
                   errors.password || errors.username
@@ -128,7 +129,7 @@ export default function Home() {
                 }`}
                 disabled={isLoading}
               >
-                {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+                {isLoading ? "Cargando..." : "Iniciar Sesión"}
               </Button>
             </form>
           </CardContent>

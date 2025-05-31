@@ -32,10 +32,8 @@ export class FactusAPI {
         ENV.ENDPOINTS.AUTH.AUTH,
         formData
       );
-
-      console.log(" response data ", data);
       if (!data) {
-        throw new Error(`Authentication failed: ${statusText}`);
+        throw Error(`Authentication failed: ${statusText}`);
       }
       this.access_token_ = data.access_token;
       this.refresh_token_ = data.refresh_token;
@@ -43,7 +41,6 @@ export class FactusAPI {
       this.scheduleTokenRefresh(data.expires_in);
       return data;
     } catch (error) {
-      console.error("Factus authentication error:", error);
       throw error;
     }
   }
