@@ -115,8 +115,17 @@ export default function Home() {
               </div>
               {/* [#f63355] */}
               <Button
+                // variant={
+                //   errors.password || errors.username
+                //     ? "destructive"
+                //     : "secondary"
+                // }
                 type="submit"
-                className="w-full bg-gray-900 font-bold"
+                className={`w-full font-bold ${
+                  errors.password || errors.username
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-gray-900 text-white"
+                }`}
                 disabled={isLoading}
               >
                 {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
