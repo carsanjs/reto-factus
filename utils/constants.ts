@@ -10,6 +10,9 @@ export const ENV = {
     AUTH: {
       AUTH: "/oauth/token",
     },
+    NOTECREDIT: {
+      DETAIL_ALL: "/v1/credit-notes",
+    },
   },
   JWT: {
     ACCESSTOKEN: "access_token",

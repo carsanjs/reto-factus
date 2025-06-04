@@ -150,8 +150,10 @@ export default function Home() {
             <h4 className="font-medium text-blue-900 mb-2">
               Credenciales de Demo:
             </h4>
-            <p className="text-sm text-blue-800">Email: admin@factusapp.com</p>
-            <p className="text-sm text-blue-800">Contraseña: demo123</p>
+            <p className="text-sm text-blue-800">
+              Email: sandbox@factus.com.co
+            </p>
+            <p className="text-sm text-blue-800">Contraseña: sandbox2024%</p>
           </div>
         </div>
       </div>

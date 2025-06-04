@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-
+import { MdOutlinePermIdentity } from "react-icons/md";
+import { FaIdBadge } from "react-icons/fa";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import Link from "next/link";
@@ -17,79 +18,22 @@ import { LuArrowLeft } from "react-icons/lu";
 import { FaBuilding, FaEye, FaPhone, FaUserTie } from "react-icons/fa6";
 import { BsSearch } from "react-icons/bs";
 import { MdEdit, MdEmail } from "react-icons/md";
-
-interface Client {
-  id: string;
-  name: string;
-  nit: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  status: "active" | "inactive";
-  totalInvoices: number;
-  totalAmount: number;
-}
-
+import { useAllNoteCredit } from "@/lib/hooks/customHook";
+import { Loading } from "../../../../components/ui/Loading";
+import { BiCodeAlt } from "react-icons/bi";
+import { MdAttachMoney } from "react-icons/md";
+import { MdError } from "react-icons/md";
 export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { noteCreditAll, isLoading } = useAllNoteCredit();
+  console.log(" notecreditaAll ", noteCreditAll);
 
-  const clients: Client[] = [
-    {
-      id: "1",
-      name: "Empresa ABC S.A.S",
-      nit: "900123456-1",
-      email: "contabilidad@empresaabc.com",
-      phone: "+57 1 234 5678",
-      address: "Carrera 45 #67-89",
-      city: "Bogotá D.C.",
-      status: "active",
-      totalInvoices: 15,
-      totalAmount: 25000000,
-    },
-    {
-      id: "2",
-      name: "Comercial XYZ Ltda",
-      nit: "800987654-2",
-      email: "facturacion@comercialxyz.com",
-      phone: "+57 4 987 6543",
-      address: "Calle 123 #45-67",
-      city: "Medellín",
-      status: "active",
-      totalInvoices: 8,
-      totalAmount: 12000000,
-    },
-    {
-      id: "3",
-      name: "Servicios DEF S.A.S",
-      nit: "700456789-3",
-      email: "admin@serviciosdef.com",
-      phone: "+57 2 456 7890",
-      address: "Avenida 78 #90-12",
-      city: "Cali",
-      status: "active",
-      totalInvoices: 22,
-      totalAmount: 35000000,
-    },
-    {
-      id: "4",
-      name: "Industrias GHI S.A",
-      nit: "600321654-4",
-      email: "compras@industriasghi.com",
-      phone: "+57 5 321 6547",
-      address: "Zona Industrial #34-56",
-      city: "Barranquilla",
-      status: "inactive",
-      totalInvoices: 3,
-      totalAmount: 4500000,
-    },
-  ];
+  if (isLoading) return <Loading />;
 
-  const filteredClients = clients.filter(
+  const filteredClients = noteCreditAll.filter(
     (client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.nit.includes(searchTerm) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+      client.api_client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.email ?? "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -151,59 +95,75 @@ export default function ClientsPage() {
                   key={client.id}
                   className="hover:shadow-md transition-shadow"
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <FaBuilding className="h-5 w-5 text-blue-600" />
-                        <Badge
-                          variant={
-                            client.status === "active" ? "default" : "secondary"
-                          }
-                        >
-                          {client.status === "active" ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
+                  <CardHeader className="pb-3 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <Badge
+                        variant={client.status === 1 ? "default" : "secondary"}
+                      >
+                        {client.status === 1 ? "Activo" : "Inactivo"}
+                      </Badge>
+                      <span className="flex flex-row items-center text-xs text-muted-foreground">
+                        <BiCodeAlt /> {client.reference_code ?? "Sin codigo"}
+                      </span>
                     </div>
-                    <CardTitle className="text-lg">{client.name}</CardTitle>
-                    <CardDescription>NIT: {client.nit}</CardDescription>
+                    <CardTitle className="text-xl">
+                      {client.api_client_name}
+                    </CardTitle>
+                    <CardDescription>
+                      {client.company || "Sin compañía"}
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MdEmail className="h-4 w-4" />
-                        <span className="truncate">{client.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <FaPhone className="h-4 w-4" />
-                        <span>{client.phone}</span>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <p>{client.address}</p>
-                        <p>{client.city}</p>
-                      </div>
+
+                  <CardContent className="space-y-4 text-sm text-gray-700">
+                    <div className="space-y-1">
+                      <p className="flex flex-row items-center">
+                        <FaIdBadge /> <strong>Identificación:</strong>{" "}
+                        {client.identification}
+                      </p>
+                      <p className="flex flex-row items-center">
+                        <MdOutlinePermIdentity /> <strong>Nombre:</strong>{" "}
+                        {client.names}
+                      </p>
+                      <p className="flex flex-row items-center">
+                        <MdEmail /> <strong>Email:</strong>{" "}
+                        {client.email || "Sin correo"}
+                      </p>
                     </div>
 
-                    <div className="border-t pt-3">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Facturas</p>
-                          <p className="font-semibold">
-                            {client.totalInvoices}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Total Facturado</p>
-                          <p className="font-semibold">
-                            ${client.totalAmount.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="border-t pt-2 space-y-1">
+                      <p className="flex flex-row items-center">
+                        <strong>Total:</strong>
+                        <MdAttachMoney />{" "}
+                        {Number(client.total).toLocaleString()}
+                      </p>
+                      <p>
+                        <strong>Fecha de creación:</strong>{" "}
+                        {client.created_at
+                          ? new Date(client.created_at).toLocaleDateString()
+                          : "Sin fecha"}
+                      </p>
                     </div>
+
+                    {client.errors?.length > 0 && (
+                      <div className="border-t pt-2">
+                        <div className="flex flex-row items-center">
+                          <MdError color="red" />
+                          <strong className="pl-1 text-red-600">
+                            Errores:
+                          </strong>
+                        </div>
+                        <ul className="list-disc list-inside text-red-500">
+                          {client.errors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     <div className="flex gap-2 pt-2">
                       <Link href={`/clients/${client.id}`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">
-                          <FaEye className="h-4 w-4 mr-2" />
+                          <FaEye className="mr-2 h-4 w-4" />
                           Ver
                         </Button>
                       </Link>
@@ -212,7 +172,7 @@ export default function ClientsPage() {
                         className="flex-1"
                       >
                         <Button variant="outline" size="sm" className="w-full">
-                          <MdEdit className="h-4 w-4 mr-2" />
+                          <MdEdit className="mr-2 h-4 w-4" />
                           Editar
                         </Button>
                       </Link>

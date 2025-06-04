@@ -1,7 +1,4 @@
 "use client";
-
-// import { SidebarDesktop } from "../../../components/sidebar/sidebar.desktop";
-// import { SidebarMovil } from "../../../components/sidebar/sidebar.movil";
 import { PrivatedRoute } from "@/lib/private/route.private";
 import { Loading } from "../../../components/ui/Loading";
 import { AuthContext, AuthProvider } from "@/lib/context/auth.context";
@@ -19,17 +16,24 @@ export default function DashboardLayout({
             <Loading />
           ) : (
             <PrivatedRoute>
-              <>
-                {children}
-                {/* Sidebar for desktop */}
-                {/* <SidebarDesktop /> */}
-                {/* Sidebar for movil */}
-                {/* <SidebarMovil>{children}</SidebarMovil> */}
-              </>
+              <>{children}</>
             </PrivatedRoute>
           )
         }
       </AuthContext.Consumer>
     </AuthProvider>
   );
+}
+
+{
+  /* Sidebar for desktop */
+}
+{
+  /* <SidebarDesktop /> */
+}
+{
+  /* Sidebar for movil */
+}
+{
+  /* <SidebarMovil>{children}</SidebarMovil> */
 }

@@ -111,7 +111,7 @@ interface Pagination {
 }
 
 ///// OBNTENER NOTA CREDITOS
-interface NotaCreditoAll {
+export interface NotaCreditoAll {
   id: number;
   api_client_name: string;
   reference_code: string;
@@ -128,7 +128,6 @@ interface NotaCreditoAll {
   send_email: number;
   created_at: string;
 }
-
 //// CREATED NOTA DE CREDITO
 interface CreateNotaCredito {
   company: {
